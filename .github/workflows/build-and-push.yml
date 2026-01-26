@@ -12,6 +12,8 @@ on:
 permissions:
   contents: write
   packages: write
+  attestations: write
+  id-token: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -23,7 +25,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -67,19 +69,16 @@ jobs:
           tags: |
             ghcr.io/${{ env.REPO_OWNER }}/genmon:${{ env.VERSION }}
             ghcr.io/${{ env.REPO_OWNER }}/genmon:latest
-
-      - name: Clean up Docker images
-        run: |
-          docker rmi ghcr.io/${{ env.REPO_OWNER }}/genmon:${{ env.VERSION }} || true
-          docker builder prune --force
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: true
+          sbom: true
 
       - name: Create GitHub Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.VERSION }}
-          release_name: "Genmon v${{ env.VERSION }}"
+          name: "Genmon v${{ env.VERSION }}"
           body: "New Genmon release detected. See the full release notes [here](https://github.com/jgyates/genmon/releases/tag/V${{ env.VERSION }})."
           draft: false
           prerelease: false
