@@ -6,7 +6,7 @@ RUN apt update -y
 RUN apt upgrade -y
 
 # The timezone specified here just bypasses some required configuration, it is not configuring a persistent setting
-RUN DEBIAN_FRONTEND="noninteractive" TZ="America/New_York" apt install -y sudo git
+RUN DEBIAN_FRONTEND="noninteractive" TZ="America/Los_Angeles" apt install -y sudo git
 
 # Download genmon code at specific version
 RUN mkdir -p /app && cd /app && git clone https://github.com/jgyates/genmon.git && \
