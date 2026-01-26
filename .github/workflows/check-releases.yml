@@ -1,0 +1,54 @@
+name: Check Genmon Releases
+
+on:
+  schedule:
+    - cron: "0 0 * * *"  # Daily at midnight UTC
+  workflow_dispatch:  # Allows manual triggering
+
+permissions:
+  contents: write
+
+jobs:
+  check-genmon-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Check and compare Genmon release
+        id: check_release
+        run: python scripts/check_genmon_release.py
+
+      - name: Update version file
+        if: env.IS_NEW_RELEASE == 'true'
+        run: |
+          echo "{\"version\": \"${{ env.LATEST_VERSION }}\"}" > version.json
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git add version.json
+          git commit -m "Update version to ${{ env.LATEST_VERSION }}"
+          git push
+
+      - name: Trigger Build Workflow
+        if: env.IS_NEW_RELEASE == 'true'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.repos.createDispatchEvent({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              event_type: 'genmon-release',
+              client_payload: {
+                latest_version: '${{ env.LATEST_VERSION }}'
+              }
+            })

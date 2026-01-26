@@ -1,4 +1,6 @@
-FROM python:3.11.5-slim-bookworm
+FROM python:3.14.2-slim-trixie
+
+ARG GENMON_VERSION
 
 RUN apt update -y
 RUN apt upgrade -y
@@ -6,8 +8,9 @@ RUN apt upgrade -y
 # The timezone specified here just bypasses some required configuration, it is not configuring a persistent setting
 RUN DEBIAN_FRONTEND="noninteractive" TZ="America/New_York" apt install -y sudo git
 
-# Download genmon code
-RUN mkdir -p /app && cd /app && git clone https://github.com/jgyates/genmon.git
+# Download genmon code at specific version
+RUN mkdir -p /app && cd /app && git clone https://github.com/jgyates/genmon.git && \
+    cd genmon && git checkout "V${GENMON_VERSION}"
 RUN sudo chmod 775 /app/genmon/startgenmon.sh && sudo chmod 775 /app/genmon/genmonmaint.sh
 
 # Update the genmon.conf file to use the TCP serial for ESP32 devices
@@ -21,8 +24,8 @@ RUN sed -i 's/flush_interval = 0/flush_interval = 60/g' /app/genmon/conf/genmqtt
 RUN sed -i 's/blacklist = Monitor,Run Time,Monitor Time,Generator Time,External Data/blacklist = Run Time,Monitor Time,Generator Time,Platform Stats,Communication Stats/g' /app/genmon/conf/genmqtt.conf
 
 # Force to use virtualenv
-RUN mkdir -p /usr/lib/python3.11
-RUN echo '' >> /usr/lib/python3.11/EXTERNALLY-MANAGED
+RUN mkdir -p /usr/lib/python3.14
+RUN echo '' >> /usr/lib/python3.14/EXTERNALLY-MANAGED
 
 # Install Genmon requirements
 RUN cd /app/genmon && ./genmonmaint.sh -i -n -s
@@ -47,7 +50,8 @@ CMD ["/app/start.sh"]
 # https://github.com/opencontainers/image-spec/blob/v1.0.1/annotations.md#pre-defined-annotation-keys
 LABEL org.opencontainers.image.title="Genmon Docker Image"
 LABEL org.opencontainers.image.description="Image to run an instance of Genmon"
-LABEL org.opencontainers.image.url="https://github.com/m0ngr31/genmon"
-LABEL org.opencontainers.image.documentation="https://github.com/m0ngr31/genmon#readme"
+LABEL org.opencontainers.image.url="https://github.com/philmichel/genmon"
+LABEL org.opencontainers.image.documentation="https://github.com/philmichel/genmon#readme"
 LABEL org.opencontainers.image.licenses="GPL-2.0"
-LABEL org.opencontainers.image.authors="Joe Ipson"
+LABEL org.opencontainers.image.authors="Joe Ipson & Phil Michel"
+LABEL org.opencontainers.image.version="${GENMON_VERSION}"
