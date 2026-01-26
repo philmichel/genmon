@@ -29,6 +29,7 @@ RUN echo '' >> /usr/lib/python3.14/EXTERNALLY-MANAGED
 
 # Install Genmon requirements
 RUN cd /app/genmon && ./genmonmaint.sh -i -n -s
+RUN pip install setuptools
 
 # Configure startup script
 COPY start.sh /app/start.sh
