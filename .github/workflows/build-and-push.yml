@@ -75,7 +75,7 @@ jobs:
           sbom: true
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3
+        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3.0.1
         with:
           tag_name: ${{ env.VERSION }}
           name: "Genmon v${{ env.VERSION }}"
