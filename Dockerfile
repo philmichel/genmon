@@ -8,9 +8,10 @@ RUN apt upgrade -y
 # The timezone specified here just bypasses some required configuration, it is not configuring a persistent setting
 RUN DEBIAN_FRONTEND="noninteractive" TZ="America/Los_Angeles" apt install -y sudo git
 
-# Download genmon code at specific version
+# Download genmon code at specific version. Upstream dropped the V tag prefix
+# with 2.0.01, so try both tag styles.
 RUN mkdir -p /app && cd /app && git clone https://github.com/jgyates/genmon.git && \
-    cd genmon && git checkout "V${GENMON_VERSION}"
+    cd genmon && { git checkout "V${GENMON_VERSION}" 2>/dev/null || git checkout "${GENMON_VERSION}"; }
 RUN sudo chmod 775 /app/genmon/startgenmon.sh && sudo chmod 775 /app/genmon/genmonmaint.sh
 
 # Update the genmon.conf file to use the TCP serial for ESP32 devices
