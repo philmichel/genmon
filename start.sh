@@ -1,11 +1,12 @@
 #!/bin/sh
 
-if [ ! -f "/var/log/genmon.log" ]; then
-  sudo touch /var/log/genmon.log
-fi
-
 if [ ! -d "/etc/genmon" ]; then
-  sudo mkdir -p /etc/genmon
+  mkdir -p /etc/genmon
 fi
 
-/app/genmon/startgenmon.sh start && tail -F /var/log/genmon.log
+# Recreate the module log dir in case a volume is mounted over /var/log
+mkdir -p /var/log/genmon
+
+# Call genloader directly with the virtualenv python: startgenmon.sh wraps the
+# same call in sudo, which is unavailable (and unnecessary) as a non-root user.
+/app/genmon/genenv/bin/python /app/genmon/genloader.py -s && tail -F /var/log/genmon.log

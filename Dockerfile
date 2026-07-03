@@ -31,13 +31,27 @@ RUN echo '' >> /usr/lib/python3.14/EXTERNALLY-MANAGED
 RUN cd /app/genmon && ./genmonmaint.sh -i -n -s
 RUN /app/genmon/genenv/bin/pip install setuptools
 
+# Allow running as non-root: genloader.py and genmon.py hard-require euid 0 via
+# MySupport.PermissionsOK(), but nothing needs root in a TCP-serial deployment.
+# The grep guard fails the build if upstream moves or changes the check.
+RUN grep -q 'MyPlatform.IsOSLinux() and os.geteuid() == 0' /app/genmon/genmonlib/mysupport.py && \
+    sed -i 's/MyPlatform.IsOSLinux() and os.geteuid() == 0/MyPlatform.IsOSLinux()/' /app/genmon/genmonlib/mysupport.py
+
+# Create an unprivileged user and give it the paths genmon writes to
+RUN useradd --uid 1000 --user-group --home-dir /app --shell /usr/sbin/nologin genmon && \
+    mkdir -p /etc/genmon /var/log/genmon && \
+    touch /var/log/genmon.log && \
+    chown -R genmon:genmon /app/genmon /etc/genmon /var/log/genmon /var/log/genmon.log
+
 # Configure startup script
 COPY start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
 # Clean up
-RUN apt-get purge -y git build-essential libssl-dev libffi-dev python3-dev cargo && apt autoremove && apt clean ; \
+RUN apt-get purge -y sudo git build-essential libssl-dev libffi-dev python3-dev cargo && apt autoremove && apt clean ; \
   rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+
+USER 1000:1000
 
 VOLUME /etc/genmon
 
