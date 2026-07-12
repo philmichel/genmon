@@ -44,9 +44,13 @@ RUN useradd --uid 1000 --user-group --home-dir /app --shell /usr/sbin/nologin ge
     touch /var/log/genmon.log && \
     chown -R genmon:genmon /app/genmon /etc/genmon /var/log/genmon /var/log/genmon.log
 
-# Configure startup script
+# Configure startup script, and replace upstream startgenmon.sh with a
+# container-aware version: upstream wraps every genloader.py call in sudo
+# (non-functional as UID 1000 under no-new-privileges), and its in-place
+# restart can't work under a container PID 1.
 COPY start.sh /app/start.sh
-RUN chmod +x /app/start.sh
+COPY startgenmon.sh /app/genmon/startgenmon.sh
+RUN chmod +x /app/start.sh /app/genmon/startgenmon.sh
 
 # Clean up
 RUN apt-get purge -y sudo git build-essential libssl-dev libffi-dev python3-dev cargo && apt autoremove && apt clean ; \
