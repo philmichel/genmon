@@ -79,6 +79,6 @@ jobs:
         with:
           tag_name: ${{ env.VERSION }}
           name: "Genmon v${{ env.VERSION }}"
-          body: "New Genmon release detected. See the full release notes [here](https://github.com/jgyates/genmon/releases/tag/V${{ env.VERSION }})."
+          body: "New Genmon release detected. See the full release notes [here](https://github.com/jgyates/genmon/releases/tag/${{ env.VERSION }})."
           draft: false
           prerelease: false
