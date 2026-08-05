@@ -1,4 +1,4 @@
-FROM python:3.14.6-slim-trixie@sha256:b0c4ec81396588a94b99052caf2f786e6e92e03111991d3d40c68762ee48d2ab
+FROM python:3.14.7-slim-trixie@sha256:83c1cebb322d099ac9e3a3a532ba74b0146d702838b25e4c75c02fa81ffeb910
 
 ARG GENMON_VERSION
 
