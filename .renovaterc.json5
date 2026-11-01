@@ -4,4 +4,15 @@
     'github>philmichel/renovate-config',
     'docker:pinDigests',
   ],
+  packageRules: [
+    {
+      description: 'Auto-merge container image patch and digest updates',
+      matchManagers: ['dockerfile'],
+      matchUpdateTypes: ['patch', 'digest'],
+      minimumReleaseAge: '3 days',
+      automerge: true,
+      automergeType: 'branch',
+      ignoreTests: true,
+    },
+  ],
 }
